@@ -1,51 +1,79 @@
 package champollion;
 
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+
 public class Enseignant extends Personne {
 
-    // TODO : rajouter les autres méthodes présentes dans le diagramme UML
+    private ArrayList<ServicePrevu> servicePrev = new ArrayList<>();
+    private LinkedList<Intervention> interventions = new LinkedList<>();
 
     public Enseignant(String nom, String email) {
         super(nom, email);
     }
 
-    /**
-     * Calcule le nombre total d'heures prévues pour cet enseignant en "heures équivalent TD" Pour le calcul : 1 heure
-     * de cours magistral vaut 1,5 h "équivalent TD" 1 heure de TD vaut 1h "équivalent TD" 1 heure de TP vaut 0,75h
-     * "équivalent TD"
-     *
-     * @return le nombre total d'heures "équivalent TD" prévues pour cet enseignant, arrondi à l'entier le plus proche
-     *
-     */
     public int heuresPrevues() {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        int equivalentTD = 0;
+        for (ServicePrevu service : servicePrev) {
+            equivalentTD += 1.5 * service.getVolumeCM();
+            equivalentTD += service.getVolumeTD();
+            equivalentTD += 0.75 * service.getVolumeTP();
+        }
+        return Math.round(equivalentTD);
     }
 
-    /**
-     * Calcule le nombre total d'heures prévues pour cet enseignant dans l'UE spécifiée en "heures équivalent TD" Pour
-     * le calcul : 1 heure de cours magistral vaut 1,5 h "équivalent TD" 1 heure de TD vaut 1h "équivalent TD" 1 heure
-     * de TP vaut 0,75h "équivalent TD"
-     *
-     * @param ue l'UE concernée
-     * @return le nombre total d'heures "équivalent TD" prévues pour cet enseignant, arrondi à l'entier le plus proche
-     *
-     */
     public int heuresPrevuesPourUE(UE ue) {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        int equivalentTD_UE = 0;
+        for (ServicePrevu service : servicePrev) {
+            if (service.getUe().equals(ue)) {
+                equivalentTD_UE += 1.5 * service.getVolumeCM();
+                equivalentTD_UE += service.getVolumeTD();
+                equivalentTD_UE += 0.75 * service.getVolumeTP();
+            }
+
+        }
+        return Math.round(equivalentTD_UE);
     }
 
-    /**
-     * Ajoute un enseignement au service prévu pour cet enseignant
-     *
-     * @param ue l'UE concernée
-     * @param volumeCM le volume d'heures de cours magitral
-     * @param volumeTD le volume d'heures de TD
-     * @param volumeTP le volume d'heures de TP
-     */
     public void ajouteEnseignement(UE ue, int volumeCM, int volumeTD, int volumeTP) {
-        // TODO: Implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        ServicePrevu sp = new ServicePrevu(volumeCM, volumeTD, volumeTP, ue, this);
+        servicePrev.add(sp);
+    }
+    
+    public void ajouteIntervention (Salle s, UE ue, Enseignant e, Date debut, int duree, TypeIntervention type) {
+        Intervention interv = new Intervention(s, ue, this, debut, duree, type);
+        interventions.add(interv);
+    }
+    
+    public boolean enSousService() {
+        if (heuresPrevues()<192) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    
+    public int heuresPlanifiees() {
+        int heurePlan = 0;
+        for (int i=0 ; i < interventions.size() ; i++) {
+            switch (interventions.get(i).getType()) {
+                case CM:
+                    heurePlan += interventions.get(i).getDuree() * 1.5;
+                    break;
+                case TD:
+                    heurePlan += interventions.get(i).getDuree();
+                    break;
+                case TP:
+                    heurePlan += interventions.get(i).getDuree() * 0.75;
+                    break;
+                default :
+                    break;
+            }
+        }
+        return Math.round(heurePlan);
     }
 
 }
+
